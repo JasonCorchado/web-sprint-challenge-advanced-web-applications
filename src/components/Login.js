@@ -1,27 +1,90 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
 
-const Login = () => {
+
+
+class Login extends React.Component {
   // make a post request to retrieve a token from the api
   // when you have handled the token, navigate to the BubblePage route
 
-  useEffect(()=>{
-    // make a post request to retrieve a token from the api
-    // when you have handled the token, navigate to the BubblePage route
-  });
+  state = {
+    login: {
+      username: '',
+      password: ''
+    },
+    error: ''
+  };
   
-  const error = "";
+  handleChange = (evt) => {
+    this.setState({
+      login: {
+        ...this.state.login,
+        [evt.target.name]:evt.target.value
+      }
+    });
+  };
+
+  login = (evt) => {
+    evt.preventDefault();
+
+    axios
+      .post('http://localhost:5000/api/login', this.state.login)
+      .then(res => {
+        localStorage.setItem('token', res.data.payload);
+        this.props.history.push('/bubblepage')
+      })
+      .catch(err=>{
+        console.log(err);
+        this.setState({
+          ...this.state,
+          error:'Username or Password not valid'
+        })
+      });
+  };
+
+  componentDidMount(){
+    return localStorage.getItem('token') ? this.props.history.push('/bubblepage') : null  
+  }
+  // useEffect(()=>{
+  //   login()
+  //   // make a post request to retrieve a token from the api
+  //   // when you have handled the token, navigate to the BubblePage route
+  // });
+  
+    
   //replace with error state
 
-  return (
-    <div>
-      <h1>Welcome to the Bubble App!</h1>
-      <div data-testid="loginForm" className="login-form">
-        <h2>Build login form here</h2>
-      </div>
+  render (){
+    return (
+        <div>
+          <h1>Welcome to the Bubble App!</h1>
+          <div data-testid="loginForm" className="login-form">
+            <h2>Login</h2>
+            <form onSubmit={this.login}>
+              <input
+                data-testid="username"
+                type="text"
+                name="username"
+                value={this.state.login.username}
+                onChange={this.handleChange}
+              />
+              <input
+                data-testid="password"
+                type="password"
+                name="password"
+                value={this.state.login.password}
+                onChange={this.handleChange}
+              />
+              <button>Log in</button>
+            </form>
+          </div>
 
-      <p data-testid="errorMessage" className="error">{error}</p>
-    </div>
-  );
+          <p data-testid="errorMessage" className="error">
+            {this.state.error}
+          </p>
+        </div>
+    );
+  }  
 };
 
 export default Login;
